@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // CORS headers for cross-origin requests from GitHub Pages
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -45,7 +45,7 @@ Return ONLY valid JSON with keys linkedin, instagram, facebook, tiktok. Each mus
     });
 
     const data = await r.json();
-    const text = (data.content || []).map(x => x.text || '').join('').replace(/\`\`\`json|\`\`\`/g, '').trim();
+    const text = (data.content || []).map(x => x.text || '').join('').replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(text);
 
     // Flatten so the front end gets { linkedin, instagram, facebook, tiktok } strings
@@ -57,12 +57,12 @@ Return ONLY valid JSON with keys linkedin, instagram, facebook, tiktok. Each mus
         let parts = [];
         if (val.copy) parts.push(val.copy);
         if (val.hashtags) parts.push(val.hashtags);
-        if (val.note) parts.push('\\n— Note: ' + val.note);
-        flat[platform] = parts.join('\\n\\n');
+        if (val.note) parts.push('\n— Note: ' + val.note);
+        flat[platform] = parts.join('\n\n');
       }
     }
     return res.status(200).json(flat);
   } catch (err) {
     return res.status(500).json({ error: err.message || 'Generation failed' });
   }
-}
+};
