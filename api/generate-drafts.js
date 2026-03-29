@@ -45,8 +45,19 @@ Return ONLY valid JSON with keys linkedin, instagram, facebook, tiktok. Each mus
     });
 
     const data = await r.json();
+    if (!r.ok) {
+      return res.status(502).json({ error: 'Anthropic API error', status: r.status, detail: data });
+    }
     const text = (data.content || []).map(x => x.text || '').join('').replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(text);
+    if (!text) {
+      return res.status(502).json({ error: 'Empty response from Anthropic', detail: data });
+    }
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch (parseErr) {
+      return res.status(502).json({ error: 'Failed to parse AI response as JSON', raw: text.substring(0, 500) });
+    }
 
     // Flatten so the front end gets { linkedin, instagram, facebook, tiktok } strings
     const flat = {};
